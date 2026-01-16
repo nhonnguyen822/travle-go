@@ -1,6 +1,6 @@
 // context/AdminNotificationContext.js
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
-import { useWebSocket } from "../hooks/useWebSocket";
+import { useAdminWebSocket } from "../hooks/useAdminWebSocket";
 import * as notificationService from "../service/notificationService";
 
 const AdminNotificationContext = createContext();
@@ -135,7 +135,7 @@ export const AdminNotificationProvider = ({ children }) => {
         reconnect,
         reconnectAttempts,
         subscribeToUserTopics // ✅ DÙNG CHUNG HOOK VỚI USER NHƯNG FILTER Ở TRÊN
-    } = useWebSocket(handleWebSocketMessage, {
+    } = useAdminWebSocket(handleWebSocketMessage, {
         enabled: true,
         autoReconnect: true,
         maxReconnectAttempts: 5

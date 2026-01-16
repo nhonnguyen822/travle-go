@@ -35,6 +35,12 @@ import AdminRevenueDashboard from "./component/admin/revenue/AdminRevenueDashboa
 import MonthlyRevenueChart from "./component/admin/revenue/MonthlyRevenueChart";
 import AdminTourCreate from "./component/admin/tour/AdminTourCreate";
 import {UserNotificationProvider} from "./component/admin/customer/UserNotificationContext";
+import AdminChatPage from "./component/admin/contact/AdminChatPage";
+import TestChat from "./component/page/ContactPage";
+import AdminContactsPage from "./component/admin/contact/AdminContactsPage";
+import AdminBlogList from "./component/admin/blog/AdminBlogList";
+import BlogForm from "./component/admin/blog/BlogForm";
+import AdminBlogDetail from "./component/admin/blog/AdminBlogDetail";
 
 // ✅ Component wrapper để chọn Notification Provider dựa trên role
 const NotificationProviderWrapper = ({ children }) => {
@@ -70,7 +76,7 @@ function App() {
                         <Route path={"/tours"} element={<TourPage/>}/>
                         <Route path={"blog"} element={<BlogPage/>}/>
                         <Route path="/blog/:id" element={<BlogDetailPage/>}/>
-                        <Route path={"contact"} element={<ContactPage/>}/>
+                        <Route path={"contact"} element={<TestChat/>}/>
                         <Route path="/tours/region/:regionId" element={<TourListByRegionPage/>}/>
 
                         {/* Auth Routes */}
@@ -173,23 +179,58 @@ function App() {
                             }
                         />
 
-                        {/*<Route*/}
-                        {/*    path="/admin/contacts"*/}
-                        {/*    element={*/}
-                        {/*        <ProtectedRoute role="ADMIN">*/}
-                        {/*            <AdminContacts />*/}
-                        {/*        </ProtectedRoute>*/}
-                        {/*    }*/}
-                        {/*/>*/}
+                        <Route
+                            path="/admin/contacts"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <AdminContactsPage />
+                                </ProtectedRoute>
+                            }
+                        />
 
-                        {/*<Route*/}
-                        {/*    path="/admin/email"*/}
-                        {/*    element={*/}
-                        {/*        <ProtectedRoute role="ADMIN">*/}
-                        {/*            <AdminEmail />*/}
-                        {/*        </ProtectedRoute>*/}
-                        {/*    }*/}
-                        {/*/>*/}
+                        <Route
+                            path="/admin/email"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <AdminChatPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/blogs"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <AdminBlogList />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="/admin/blogs/create"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <BlogForm />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="/admin/blogs/edit/:id"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <BlogForm  isEdit={true}/>
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="/admin/blogs/:id"
+                            element={
+                                <ProtectedRoute role="ADMIN">
+                                    <AdminBlogDetail  isEdit={true}/>
+                                </ProtectedRoute>
+                            }
+                        />
 
                         <Route
                             path="/admin/users"

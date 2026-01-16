@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
         const userData = resp.data.user || resp.data;
         setUser(userData);
         setIsAuthenticated(true);
+        console.log(resp.data)
         return userData; // ✅ Trả về user mới
       } else {
         setUser(null);
@@ -36,9 +37,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/auth/logout'); // Gọi API logout server
     } catch (error) {
-      // Ignore errors
     } finally {
-      // ✅ Clear mọi state và storage
       setUser(null);
       setIsAuthenticated(false);
 

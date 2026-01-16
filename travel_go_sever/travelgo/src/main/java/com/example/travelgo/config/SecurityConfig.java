@@ -47,7 +47,7 @@ public class SecurityConfig {
                                 "/api/tours/**", "/api/payment/vn-pay-callback","/api/regions/**",
                                 "/api/tours/region/**","/api/mail/**","/api/geo/**","/api/upload/**",
                                 "/api/schedules/**","/api/service-tour/**","/api/policies/**","/ws/**",
-                                "/topic/**", "/queue/**", "/user/**", "/app/**").permitAll()
+                                "/topic/**", "/queue/**", "/user/**", "/app/**","/api/chat/́́","api/contacts","/api/blogs/**").permitAll()
                         .requestMatchers("/api/user/**", "/api/transactions","/api/bookings/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/api/admin/**","/api/notifications/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
@@ -110,5 +110,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }

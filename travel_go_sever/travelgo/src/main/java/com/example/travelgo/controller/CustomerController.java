@@ -2,6 +2,7 @@ package com.example.travelgo.controller;
 
 import com.example.travelgo.dto.CustomerResponse;
 import com.example.travelgo.dto.CustomerStats;
+import com.example.travelgo.entity.User;
 import com.example.travelgo.enums.CustomerType;
 import com.example.travelgo.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/customers")
@@ -53,6 +55,9 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+
+
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateCustomerStatus(

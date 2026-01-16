@@ -26,6 +26,8 @@ export const getCustomerById=async (id)=> {
     }
 }
 
+
+
 export const updateCustomerStatus=async (id, status)=> {
     try {
         const response = await api.patch(`/admin/customers/${id}/status`, null, {

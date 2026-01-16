@@ -1,12 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Link, useNavigate, useSearchParams} from "react-router-dom";
-import {ArrowLeft, Eye, EyeOff, Lock, Mail} from "lucide-react";
+import {Eye, EyeOff, Lock, Mail} from "lucide-react";
 import toast from "react-hot-toast";
 import {ErrorMessage, Field, Form, Formik} from "formik";
 import * as Yup from "yup";
 
 import {useAuth} from "../../context/AuthContext";
-
 import {login} from "../../service/authService";
 import EnableAccountModal from "../modal/EnableAccountModal";
 import HeaderComponent from "../layout/HeaderComponent";
@@ -23,11 +22,12 @@ const loginSchema = Yup.object({
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
-    const { fetchUser, user } = useAuth();
+    const { fetchUser, user, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const shownRef = useRef(false);
     const [showReminderModal, setShowReminderModal] = useState(false);
+    const [loginSuccessful, setLoginSuccessful] = useState(false);
 
     const initialValues = {
         email: "",
@@ -35,49 +35,116 @@ const LoginPage = () => {
         rememberMe: false,
     };
 
+    // Xử lý error từ URL params
     useEffect(() => {
         const errorParam = searchParams.get("error");
         if (!shownRef.current && errorParam === "ACCOUNT_DISABLED") {
             toast.error("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên");
         }
         shownRef.current = true;
-        navigate("/login", { replace: true });
-    }, [searchParams, navigate]);
+        // Không cần navigate ở đây nữa
+    }, [searchParams]);
+
+    // Xử lý navigation sau khi login thành công
+    useEffect(() => {
+        console.log("🔍 DEBUG useEffect:", {
+            loginSuccessful,
+            loading,
+            isAuthenticated,
+            userRole: user?.role
+        });
+
+        // Kiểm tra nếu đã login thành công và user đã được fetch
+        if (loginSuccessful && !loading && isAuthenticated && user) {
+            console.log("✅ Điều kiện đủ để navigate");
+
+            // Thêm timeout nhỏ để đảm bảo WebSocket đã kết nối
+            const timer = setTimeout(() => {
+                if (user.role === "ADMIN") {
+                    console.log("🚀 Điều hướng đến /admin");
+                    navigate("/admin", { replace: true });
+                } else {
+                    console.log("🏠 Điều hướng đến /");
+                    navigate("/", { replace: true });
+                }
+                setLoginSuccessful(false);
+            }, 300);
+
+            return () => clearTimeout(timer);
+        }
+    }, [loginSuccessful, loading, isAuthenticated, user, navigate]);
+
+    // Nếu đã đăng nhập, tự động chuyển hướng
+    useEffect(() => {
+        if (isAuthenticated && user && !loading) {
+            console.log("🔄 Đã đăng nhập, tự động chuyển hướng");
+            if (user.role === "ADMIN") {
+                navigate("/admin", { replace: true });
+            } else {
+                navigate("/", { replace: true });
+            }
+        }
+    }, [isAuthenticated, user, loading, navigate]);
 
     const handleSubmit = async (values, { setSubmitting }) => {
         try {
+            console.log("🔐 Bắt đầu đăng nhập...");
             const result = await login(values);
+            console.log("📊 Kết quả login:", result);
+
             if (result.success) {
                 toast.dismiss();
                 toast.success("Đăng nhập thành công!");
-                const newUser = await fetchUser();
-                if (newUser?.role === "ADMIN") {
-                    navigate("/admin");
-                } else {
-                    navigate("/");
-                }
-                // if (user?.role?.name === "ADMIN") {
-                //     navigate("/admin");
-                // } else {
-                //     navigate("/");
-                // }
+
+                // Đánh dấu login thành công
+                setLoginSuccessful(true);
+
+                // Fetch user mới
+                console.log("🔄 Đang fetch user...");
+                await fetchUser();
+                console.log("✅ Fetch user hoàn tất");
+
             } else {
-                if(result.code && result.code === "EMAIL_NOT_VERIFIED"){
-                    setShowReminderModal(true)
+                if (result.code && result.code === "EMAIL_NOT_VERIFIED") {
+                    setShowReminderModal(true);
                 }
                 toast.error(result.error || "Sai tài khoản hoặc mật khẩu");
             }
         } catch (error) {
+            console.error("❌ Lỗi đăng nhập:", error);
             toast.error("Có lỗi xảy ra, vui lòng thử lại");
         } finally {
             setSubmitting(false);
-            // setShowReminderModal(false)
         }
     };
 
     const handleGoogleLogin = () => {
         window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`;
     };
+
+    // Nếu đang loading, hiển thị loading screen
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="text-gray-700">Đang tải...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Nếu đã đăng nhập, hiển thị loading và chờ chuyển hướng
+    if (isAuthenticated && user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="text-gray-700">Đang chuyển hướng...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -86,17 +153,13 @@ const LoginPage = () => {
              justify-center py-12 px-4 sm:px-6 lg:px-8">
 
                 {showReminderModal && <EnableAccountModal onClose={() => setShowReminderModal(false)} />}
+
                 <div className="max-w-md w-full space-y-8">
                     {/* Header */}
                     <div className="text-center">
-                        {/*<Link to="/" className="inline-flex items-center text-green-600 hover:text-green-700 mb-8">*/}
-                        {/*    <ArrowLeft size={20} className="mr-2" /> Về trang chủ*/}
-                        {/*</Link>*/}
-
                         <div className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-indigo-500 drop-shadow-lg tracking-wide">
                             TravelGo
                         </div>
-                        {/*<div className="text-2xl font-bold text-green-500">TravelGo</div>*/}
 
                         <h2 className="text-3xl font-bold font-heading text-gray-900 mb-2">
                             Chào mừng trở lại!
@@ -113,19 +176,23 @@ const LoginPage = () => {
                             validationSchema={loginSchema}
                             onSubmit={handleSubmit}
                         >
-                            {({ isSubmitting, values, errors, touched }) => (
+                            {({ isSubmitting, errors, touched }) => (
                                 <Form className="space-y-6">
                                     {/* Email Field */}
                                     <div>
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Email
+                                        </label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                             <Field
                                                 id="email"
                                                 name="email"
                                                 type="email"
-                                                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.email && touched.email ? "border-red-500" : "border-gray-300"}`}
-                                                placeholder="Nhập email của bạn"
+                                                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                    errors.email && touched.email ? "border-red-500" : "border-gray-300"
+                                                }`}
+                                                placeholder="admin@gmail.com"
                                             />
                                         </div>
                                         <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
@@ -133,14 +200,18 @@ const LoginPage = () => {
 
                                     {/* Password Field */}
                                     <div>
-                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Mật khẩu
+                                        </label>
                                         <div className="relative">
                                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                             <Field
                                                 id="password"
                                                 name="password"
                                                 type={showPassword ? "text" : "password"}
-                                                className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.password && touched.password ? "border-red-500" : "border-gray-300"}`}
+                                                className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                    errors.password && touched.password ? "border-red-500" : "border-gray-300"
+                                                }`}
                                                 placeholder="Nhập mật khẩu"
                                             />
                                             <button
@@ -157,10 +228,19 @@ const LoginPage = () => {
                                     {/* Remember Me & Forgot Password */}
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
-                                            <Field id="rememberMe" name="rememberMe" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                                            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">Ghi nhớ đăng nhập</label>
+                                            <Field
+                                                id="rememberMe"
+                                                name="rememberMe"
+                                                type="checkbox"
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+                                                Ghi nhớ đăng nhập
+                                            </label>
                                         </div>
-                                        <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">Quên mật khẩu?</Link>
+                                        <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                                            Quên mật khẩu?
+                                        </Link>
                                     </div>
 
                                     {/* Submit Button */}
@@ -219,14 +299,15 @@ const LoginPage = () => {
                         <div className="mt-6 text-center">
                             <p className="text-sm text-gray-600">
                                 Chưa có tài khoản?{" "}
-                                <Link to="/register" className="font-medium text-green-600 hover:text-green-700">Đăng ký ngay</Link>
+                                <Link to="/register" className="font-medium text-green-600 hover:text-green-700">
+                                    Đăng ký ngay
+                                </Link>
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
         </>
-
     );
 };
 

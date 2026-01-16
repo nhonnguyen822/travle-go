@@ -32,7 +32,6 @@ public class NotificationService {
             // Lưu vào database
             Notification savedNotification = notificationRepository.save(notification);
 
-            // Gửi real-time notification qua WebSocket
             messagingTemplate.convertAndSendToUser(
                     userId.toString(),
                     "/queue/notifications",
@@ -46,7 +45,6 @@ public class NotificationService {
 
     public void notifyPaymentSuccess(Booking booking) {
         try {
-            // ✅ SỬ DỤNG PHƯƠNG THỨC createPaymentNotification THAY VÌ TỰ TẠO
             createPaymentNotification(
                     booking.getUser().getId(),
                     booking.getUser().getEmail(),

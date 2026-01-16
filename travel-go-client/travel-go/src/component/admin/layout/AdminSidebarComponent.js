@@ -90,7 +90,6 @@ const AdminSidebarComponent = ({ collapsed }) => {
             children: [
                 { name: "Tổng quan", href: "/admin/revenue" },
                 { name: "Theo tháng", href: "/admin/revenue/monthly" },
-                { name: "Theo tour", href: "/admin/revenue/tours" },
             ],
         },
         {
@@ -100,15 +99,18 @@ const AdminSidebarComponent = ({ collapsed }) => {
             children: [
                 { name: "Danh sách liên hệ", href: "/admin/contacts" },
                 { name: "Gửi email", href: "/admin/email" },
-                { name: "Template email", href: "/admin/email/templates" },
             ],
         },
         {
-            name: "Cài đặt",
-            href: "/admin/settings",
-            icon: Settings,
-            description: "Cấu hình hệ thống"
+            name: "Quản lý Blog",
+            icon: Mail, // hoặc FileText nếu bạn muốn
+            description: "Bài viết & nội dung",
+            children: [
+                { name: "Danh sách Blog", href: "/admin/blogs" },
+                { name: "Tạo Blog mới", href: "/admin/blogs/create" },
+            ],
         },
+
     ];
 
     // Auto mở menu cha khi đang ở submenu

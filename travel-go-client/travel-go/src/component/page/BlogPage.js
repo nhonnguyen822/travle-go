@@ -7,7 +7,6 @@ const BlogPage = () => {
     const posts = [
         { id: 1, title: "Khám phá Hội An", snippet: "Một ngày trải nghiệm phố cổ Hội An…", img: "https://images.unsplash.com/photo-1551334787-21e6bd3ab135?auto=format&fit=crop&w=800&q=80" },
         { id: 2, title: "Tour biển Nha Trang", snippet: "Chuyến đi biển tuyệt vời cho gia đình…", img: "https://images.unsplash.com/photo-1551334787-21e6bd3ab135?auto=format&fit=crop&w=800&q=80" },
-        // thêm post khác
     ];
 
     return (
@@ -36,7 +35,6 @@ const BlogPage = () => {
             </div>
             <FooterComponent/>
         </>
-
     );
 };
 

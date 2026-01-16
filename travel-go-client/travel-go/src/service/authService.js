@@ -46,6 +46,15 @@ export const login = async (data) => {
     }
 }
 
+export const getCustomerByEmail=async (email)=> {
+    try {
+        const response = await api.get(`/auth/users/email/${email}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message;
+    }
+}
+
 
 export const verifyEmail = async (token) => {
     try {

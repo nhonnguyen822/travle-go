@@ -10,8 +10,10 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     @Override
     protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
         messages
-                .simpDestMatchers("/user/queue/notifications").hasRole("ADMIN")
-                .anyMessage().authenticated();
+                .nullDestMatcher().permitAll()
+                .simpSubscribeDestMatchers("/user/**", "/topic/**", "/queue/**").permitAll()
+                .simpDestMatchers("/app/**").permitAll()
+                .anyMessage().permitAll();
     }
 
     @Override
